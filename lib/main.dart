@@ -1,8 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+// provider scope
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(
+      child: MyApp(),
+  ));
 }
+
+// state notifier, counter class
+class Counter extends StateNotifier<int>{
+  Counter(): super(0);
+  void incrementCounter(){
+    state++;
+  }
+  int get value => state;
+}
+
+// state notifier provider
+final counterProvider = StateNotifierProvider<Counter, int>((ref) => Counter(),);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,35 +30,24 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      debugShowCheckedModeBanner: false,
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class MyHomePage extends ConsumerWidget {
+  const MyHomePage({Key? key, required this.title}) : super (key:key );
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref){
+    final counter = ref.watch(counterProvider);
 
     return Scaffold(
       appBar: AppBar(
 
-        title: Text(widget.title),
+        title: Text(title),
       ),
       body: Center(
 
@@ -54,14 +59,14 @@ class _MyHomePageState extends State<MyHomePage> {
               'You have pushed the button this many times:',
             ),
             Text(
-              '$_counter',
+              '$counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: ref.read(counterProvider.notifier).incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
